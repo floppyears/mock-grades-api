@@ -1,10 +1,6 @@
 package edu.oregonstate.mist.mockgradesapi
 
 import com.codahale.metrics.annotation.Timed
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.ObjectMapper
 import edu.oregonstate.mist.api.AuthenticatedUser
 import edu.oregonstate.mist.api.Error
 import edu.oregonstate.mist.api.Resource
@@ -20,28 +16,16 @@ import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
-class GradeResourceObject {
-    String id
-    String type
-    GradeAttributes attributes
-    Map<String,String> links
-}
-
-class GradeAttributes {
-    String courseNumber
-    String grade
-}
-
 @Path("/grades")
 @Produces(MediaType.APPLICATION_JSON)
 @groovy.transform.CompileStatic
 class GradesResource extends Resource {
     private static final Logger LOGGER = LoggerFactory.getLogger(GradesResource.class)
-    private String gradesJsonPath
+    private GradesDAO gradesDAO
 
-    GradesResource(URI endpointUri, String gradesJsonPath) {
+    GradesResource(URI endpointUri, GradesDAO gradesDAO) {
         this.endpointUri = endpointUri
-        this.gradesJsonPath = gradesJsonPath
+        this.gradesDAO = gradesDAO
     }
 
     @GET
@@ -52,47 +36,31 @@ class GradesResource extends Resource {
     ) {
         if (!username) {
             return Response.status(Response.Status.FORBIDDEN)
-                .entity({new Error(
+                .entity(new Error(
                     status: Response.Status.FORBIDDEN.statusCode,
                     developerMessage: "not logged in",
                     userMessage: "",
                     code: 0,
                     details: ""
-                )})
+                ))
                 .build()
         }
 
-        def f
-        try {
-            f = new File(this.gradesJsonPath)
-        } catch (IOException e) {
-            return this.internalServerError("error opening grades.json $e").build()
-        }
-
-        def mapper = new ObjectMapper()
-        def typeRef = new TypeReference<HashMap<String, ArrayList<GradeResourceObject>>>() {}
         def grades
-
         try {
-            grades = mapper.readValue(f, typeRef)
-        } catch (IOException e) {
-            return this.internalServerError("error reading grades.json: $e").build()
-        } catch (JsonParseException e) {
-            return this.internalServerError("error parsing grades.json: $e").build()
-        } catch (JsonMappingException e) {
-            return this.internalServerError("error mapping grades.json: $e").build()
+            grades = this.gradesDAO.getGradesByUsername(username)
+        } catch (GradesException e) {
+            LOGGER.error("$e", e)
+            return this.internalServerError("$e").build()
         }
-        
-        def myGrades = grades[username]
-        if (myGrades == null) {
-            return this.notFound().build() // XXX 401?
+
+        if (grades == null) {
+            return this.notFound().build()
         }
 
         def res = new ResultObject(
-            links: [
-                self: this.endpointUri
-            ],
-            data: myGrades
+            links: [ self: this.endpointUri ],
+            data: grades
         )
 
         return this.ok(res).build()

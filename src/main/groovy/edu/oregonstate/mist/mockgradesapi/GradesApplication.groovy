@@ -17,14 +17,6 @@ import io.dropwizard.auth.basic.BasicAuthFactory
  */
 class GradesApplication extends Application<Configuration> {
     /**
-     * Initializes application bootstrap.
-     *
-     * @param bootstrap
-     */
-    @Override
-    public void initialize(Bootstrap<Configuration> bootstrap) {}
-
-    /**
      * Parses command-line arguments and runs the application.
      *
      * @param configuration
@@ -45,7 +37,8 @@ class GradesApplication extends Application<Configuration> {
                                 'GradesApplication',
                                 AuthenticatedUser.class)))
 
-        environment.jersey().register(new GradesResource(configuration.api.endpointUri, configuration.api.gradesJsonPath))
+        def gradesDAO = new GradesDAO(configuration.api.gradesJsonPath)
+        environment.jersey().register(new GradesResource(configuration.api.endpointUri, gradesDAO))
     }
 
     /**
