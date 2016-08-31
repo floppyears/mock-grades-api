@@ -55,7 +55,7 @@ class GradesResource extends Resource {
         }
 
         if (grades == null) {
-            return this.notFound().build()
+            grades = []
         }
 
         def res = new ResultObject(
