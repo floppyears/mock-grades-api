@@ -1,4 +1,4 @@
-package edu.oregonstate.mist.webapiskeleton
+package edu.oregonstate.mist.mockgradesapi
 
 import edu.oregonstate.mist.api.BuildInfoManager
 import edu.oregonstate.mist.api.Configuration
@@ -15,7 +15,7 @@ import io.dropwizard.auth.basic.BasicAuthFactory
 /**
  * Main application class.
  */
-class SkeletonApplication extends Application<Configuration> {
+class GradesApplication extends Application<Configuration> {
     /**
      * Initializes application bootstrap.
      *
@@ -42,8 +42,10 @@ class SkeletonApplication extends Application<Configuration> {
                 AuthFactory.binder(
                         new BasicAuthFactory<AuthenticatedUser>(
                                 new BasicAuthenticator(configuration.getCredentialsList()),
-                                'SkeletonApplication',
+                                'GradesApplication',
                                 AuthenticatedUser.class)))
+
+        environment.jersey().register(new GradesResource(configuration.api.endpointUri, configuration.api.gradesJsonPath))
     }
 
     /**
@@ -53,6 +55,6 @@ class SkeletonApplication extends Application<Configuration> {
      * @throws Exception
      */
     public static void main(String[] arguments) throws Exception {
-        new SkeletonApplication().run(arguments)
+        new GradesApplication().run(arguments)
     }
 }

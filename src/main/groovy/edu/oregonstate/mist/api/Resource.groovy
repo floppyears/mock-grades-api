@@ -110,6 +110,10 @@ abstract class Resource {
         ))
     }
 
+    URI getEndpointUri() {
+        return this.endpointUri
+    }
+
     void setEndpointUri(URI endpointUri) {
         this.endpointUri = endpointUri
     }

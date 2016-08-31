@@ -1,0 +1,33 @@
+{
+    "cedenoj":  [
+        {
+            "type": "grades",
+            "id": "123",
+            "attributes": {
+                "courseNumber": "CS101",
+                "grade": "A"
+            },
+            "links": {}
+        },
+        {
+            "type": "grades",
+            "id": "456",
+            "attributes": {
+                "courseNumber": "OC434",
+                "grade": "F"
+            },
+            "links": {}
+        }
+    ],
+    "ekstedta": [
+        {
+            "type": "grades",
+            "id": "121",
+            "attributes": {
+                "courseNumber": "CS271",
+                "grade": "B-"
+            },
+            "links": {}
+        }
+    ]
+}
