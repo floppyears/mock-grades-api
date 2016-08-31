@@ -101,15 +101,17 @@ The Web API definition is contained in the [Swagger specification](swagger.yaml)
 
 The following examples demonstrate the use of `curl` to make authenticated HTTPS requests.
 
-### GET /
+### GET /v1/grades
 
-This resource returns build and runtime information:
+This resource returns the list of grades for a user.
+Use the x-username header to set the username.
 
     $ curl \
     > --cacert doej.pem \
     > --user "username:password" \
+    > -H 'x-username: ekstedta'
     > https://localhost:8080/v1/grades
-    {"name":"web-api-skeleton","time":"2016-08-02 14:37:01-0700","unixTime":1470173821035,"commit":"e3d396e","documentation":"swagger.yaml"}
+    {"links":{"self":"https://api.oregonstate.edu/v1/grades"},"data":[{"id":"121","type":"grades","attributes":{"courseNumber":"CS271","grade":"B-"},"links":{}}]}
 
 NOTE: you should only specify a certificate with --cacert for local testing.
 Production servers should use a real certificate

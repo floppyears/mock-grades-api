@@ -14,7 +14,8 @@ class GradesException extends RuntimeException {
 class GradesDAO {
     private String filename
     private ObjectMapper mapper = new ObjectMapper()
-    private TypeReference typeRef = new TypeReference<HashMap<String, ArrayList<GradesResourceObject>>>() {}
+    private TypeReference typeRef =
+        new TypeReference<HashMap<String, ArrayList<GradesResourceObject>>>() {}
 
     GradesDAO(String filename) {
         this.filename = filename
