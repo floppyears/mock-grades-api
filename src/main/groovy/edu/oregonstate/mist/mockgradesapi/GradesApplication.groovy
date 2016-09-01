@@ -26,8 +26,11 @@ class GradesApplication extends Application<Configuration> {
     public void run(Configuration configuration, Environment environment) {
         Resource.loadProperties()
 
-        BuildInfoManager buildInfoManager = new BuildInfoManager()
+        def buildInfoManager = new BuildInfoManager()
+        def gradesDAO = new GradesDAO(configuration.api.gradesJsonPath)
+
         environment.lifecycle().manage(buildInfoManager)
+        environment.lifecycle().manage(gradesDAO)
 
         environment.jersey().register(new InfoResource(buildInfoManager.getInfo()))
         environment.jersey().register(
@@ -37,7 +40,6 @@ class GradesApplication extends Application<Configuration> {
                                 'GradesApplication',
                                 AuthenticatedUser.class)))
 
-        def gradesDAO = new GradesDAO(configuration.api.gradesJsonPath)
         environment.jersey().register(new GradesResource(configuration.api.endpointUri, gradesDAO))
     }
 

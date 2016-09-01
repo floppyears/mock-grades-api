@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonGenerationException
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.dropwizard.lifecycle.Managed
+import java.util.concurrent.ConcurrentHashMap
 
 class GradesException extends RuntimeException {
     GradesException(String message, Throwable cause) {
@@ -12,7 +14,7 @@ class GradesException extends RuntimeException {
     }
 }
 
-class GradesDAO {
+class GradesDAO implements Managed {
     private static final GRADES = [
         "A", "A-",
         "B+", "B", "B-",
@@ -27,11 +29,22 @@ class GradesDAO {
     private File file
     private ObjectMapper mapper = new ObjectMapper()
     private TypeReference typeRef =
-        new TypeReference<HashMap<String, ArrayList<GradesResourceObject>>>() {}
+        new TypeReference<ConcurrentHashMap<String, ArrayList<GradesResourceObject>>>() {}
     private random = new Random()
+    private ConcurrentHashMap<String,LinkedList<GradesResourceObject>> allGrades
 
     GradesDAO(String filename) {
         this.file = new File(filename)
+    }
+
+    @Override
+    public void start() throws Exception {
+        this.allGrades = this.readGrades()
+    }
+
+    @Override
+    public void stop() throws Exception {
+        this.writeGrades(this.allGrades)
     }
 
     /**
@@ -41,12 +54,10 @@ class GradesDAO {
      * @return a list of grades, or null if the user doesn't exist
      */
     List<GradesResourceObject> getGradesByUsername(String username) {
-        def allGrades = this.readGrades()
-        def grades = allGrades[username]
+        def grades = this.allGrades[username]
         if (grades == null) {
             grades = this.randomGrades()
-            allGrades[username] = grades
-            this.saveGrades(allGrades)
+            this.allGrades[username] = grades
         }
         return grades
     }
@@ -72,7 +83,7 @@ class GradesDAO {
         return this.SUBJECTS[index] + num.toString()
     }
 
-    private HashMap<String,LinkedList<GradesResourceObject>> readGrades() {
+    private ConcurrentHashMap<String,LinkedList<GradesResourceObject>> readGrades() {
         def grades
         try {
             grades = this.mapper.readValue(this.file, this.typeRef)
@@ -87,7 +98,7 @@ class GradesDAO {
         return grades
     }
 
-    private saveGrades(HashMap<String,LinkedList<GradesResourceObject>> grades) {
+    private writeGrades(ConcurrentHashMap<String,LinkedList<GradesResourceObject>> grades) {
         try {
             this.mapper.writeValue(this.file, grades)
         } catch (IOException e) {
