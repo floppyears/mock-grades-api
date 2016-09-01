@@ -68,7 +68,7 @@ class GradesDAO {
 
     private String randomCourse() {
         int index = this.random.nextInt(this.SUBJECTS.size())
-        int num = 100+this.random.nextInt(500-101)
+        int num = 101 + this.random.nextInt(500 - 101)
         return this.SUBJECTS[index] + num.toString()
     }
 
