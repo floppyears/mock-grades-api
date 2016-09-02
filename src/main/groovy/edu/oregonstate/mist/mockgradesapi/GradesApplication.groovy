@@ -1,4 +1,4 @@
-package edu.oregonstate.mist.webapiskeleton
+package edu.oregonstate.mist.mockgradesapi
 
 import edu.oregonstate.mist.api.BuildInfoManager
 import edu.oregonstate.mist.api.Configuration
@@ -15,15 +15,7 @@ import io.dropwizard.auth.basic.BasicAuthFactory
 /**
  * Main application class.
  */
-class SkeletonApplication extends Application<Configuration> {
-    /**
-     * Initializes application bootstrap.
-     *
-     * @param bootstrap
-     */
-    @Override
-    public void initialize(Bootstrap<Configuration> bootstrap) {}
-
+class GradesApplication extends Application<Configuration> {
     /**
      * Parses command-line arguments and runs the application.
      *
@@ -34,16 +26,21 @@ class SkeletonApplication extends Application<Configuration> {
     public void run(Configuration configuration, Environment environment) {
         Resource.loadProperties()
 
-        BuildInfoManager buildInfoManager = new BuildInfoManager()
+        def buildInfoManager = new BuildInfoManager()
+        def gradesDAO = new GradesDAO(configuration.api.gradesJsonPath)
+
         environment.lifecycle().manage(buildInfoManager)
+        environment.lifecycle().manage(gradesDAO)
 
         environment.jersey().register(new InfoResource(buildInfoManager.getInfo()))
         environment.jersey().register(
                 AuthFactory.binder(
                         new BasicAuthFactory<AuthenticatedUser>(
                                 new BasicAuthenticator(configuration.getCredentialsList()),
-                                'SkeletonApplication',
+                                'GradesApplication',
                                 AuthenticatedUser.class)))
+
+        environment.jersey().register(new GradesResource(configuration.api.endpointUri, gradesDAO))
     }
 
     /**
@@ -53,6 +50,6 @@ class SkeletonApplication extends Application<Configuration> {
      * @throws Exception
      */
     public static void main(String[] arguments) throws Exception {
-        new SkeletonApplication().run(arguments)
+        new GradesApplication().run(arguments)
     }
 }

@@ -12,5 +12,8 @@ class ApiConfiguration {
     @NotNull
     @Valid
     URI endpointUri
+    
+    @Valid
+    String gradesJsonPath
 }
 
